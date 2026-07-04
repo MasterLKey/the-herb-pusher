@@ -1,0 +1,4 @@
+proxmox_endpoint  = "https://192.168.4.223:8006"
+proxmox_api_token = "root@pam!cursor=<your-token-here>"
+container_id      = 201
+ssh_public_key    = "ssh-ed25519 AAAA... your-key-comment"

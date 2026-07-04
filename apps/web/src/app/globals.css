@@ -1,0 +1,79 @@
+@import "tailwindcss";
+@import "@tailwindcss/typography";
+
+@theme {
+  /* Brand colours */
+  --color-brand-green: #174F35;
+  --color-brand-leaf: #4F9D69;
+  --color-brand-charcoal: #171717;
+  --color-brand-cream: #F5F0E6;
+  --color-brand-gold: #D99A2B;
+  --color-brand-clay: #C96F3A;
+  --color-brand-sage: #DCE8DC;
+  --color-brand-offwhite: #FFFDF7;
+  --color-brand-caution: #B94A48;
+  --color-brand-warn: #FFF4D6;
+
+  /* Typography */
+  --font-heading: "Inter", "system-ui", sans-serif;
+  --font-body: "Inter", "system-ui", sans-serif;
+
+  /* Radius */
+  --radius-card: 0.75rem;
+  --radius-badge: 9999px;
+  --radius-btn: 0.5rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-brand-cream);
+    color: var(--color-brand-charcoal);
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  /* Ensure evidence ratings are never conveyed by colour alone */
+  [data-evidence-rating] {
+    font-weight: 600;
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .container-content {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .card-base {
+    @apply bg-brand-offwhite rounded-[var(--radius-card)] border border-brand-sage shadow-sm;
+  }
+  .badge-pill {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[var(--radius-badge)] text-xs font-semibold uppercase tracking-wide;
+  }
+  .btn-primary {
+    @apply bg-brand-green text-brand-cream rounded-[var(--radius-btn)] px-5 py-2.5 font-semibold text-sm hover:bg-brand-leaf transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green;
+  }
+  .btn-secondary {
+    @apply bg-brand-offwhite text-brand-green border border-brand-green rounded-[var(--radius-btn)] px-5 py-2.5 font-semibold text-sm hover:bg-brand-sage transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green;
+  }
+  .safety-box {
+    @apply bg-brand-warn border-l-4 border-brand-gold rounded-r-lg p-4 text-sm;
+  }
+  .caution-box {
+    @apply bg-red-50 border-l-4 border-brand-caution rounded-r-lg p-4 text-sm;
+  }
+  .info-box {
+    @apply bg-brand-sage border-l-4 border-brand-leaf rounded-r-lg p-4 text-sm;
+  }
+}
