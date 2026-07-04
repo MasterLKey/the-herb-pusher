@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { indexDocument, deleteDocument } from '@/lib/search'
 
 export const EVIDENCE_RATINGS = [
   { label: 'Strong Evidence', value: 'strong' },
@@ -30,6 +31,27 @@ export const Ingredients: CollectionConfig = {
   },
   versions: {
     drafts: true,
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc }) => {
+        if (doc.status === 'published') {
+          await indexDocument('ingredients', {
+            id: String(doc.id),
+            name: doc.name,
+            slug: doc.slug,
+            shortSummary: doc.shortSummary,
+            evidenceRating: doc.evidenceRating,
+            category: doc.category,
+          })
+        }
+      },
+    ],
+    afterDelete: [
+      async ({ id }) => {
+        await deleteDocument('ingredients', String(id))
+      },
+    ],
   },
   fields: [
     {

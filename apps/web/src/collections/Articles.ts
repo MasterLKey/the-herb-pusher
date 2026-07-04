@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { indexDocument, deleteDocument } from '@/lib/search'
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
@@ -14,6 +15,26 @@ export const Articles: CollectionConfig = {
   },
   versions: {
     drafts: true,
+  },
+  hooks: {
+    afterChange: [
+      async ({ doc }) => {
+        if (doc.status === 'published') {
+          await indexDocument('articles', {
+            id: String(doc.id),
+            title: doc.title,
+            slug: doc.slug,
+            excerpt: doc.excerpt,
+            type: doc.type,
+          })
+        }
+      },
+    ],
+    afterDelete: [
+      async ({ id }) => {
+        await deleteDocument('articles', String(id))
+      },
+    ],
   },
   fields: [
     {
