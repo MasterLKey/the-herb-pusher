@@ -1,0 +1,29 @@
+# The Herb Pusher — run provision.sh on the LXC container.
+# COPY this file to deploy.ps1 and fill in credentials (deploy.ps1 is gitignored).
+# Usage: .\scripts\deploy.ps1 -ContainerIP <ip>
+
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$ContainerIP
+)
+
+$SshKey    = "$env:USERPROFILE\.ssh\octo_scrape_deploy"
+$SshTarget = "root@$ContainerIP"
+
+# Credentials — fill these in from your Cloudflare skill / dashboard
+$CF_ACCOUNT_ID = "REPLACE_WITH_ACCOUNT_ID"
+$CF_API_TOKEN  = "REPLACE_WITH_API_TOKEN"
+
+Write-Host "==> Copying provision.sh to container $ContainerIP..."
+scp -i $SshKey -o StrictHostKeyChecking=no `
+    scripts/provision.sh "${SshTarget}:/tmp/provision.sh"
+
+Write-Host "==> Running provision.sh on container..."
+$RemoteCmd = "CF_ACCOUNT_ID=$CF_ACCOUNT_ID CF_API_TOKEN=$CF_API_TOKEN bash /tmp/provision.sh"
+ssh -i $SshKey -o StrictHostKeyChecking=no $SshTarget $RemoteCmd
+
+Write-Host ""
+Write-Host "==> Done. Next:"
+Write-Host "  1. SSH: ssh -i `"$SshKey`" -o StrictHostKeyChecking=no $SshTarget"
+Write-Host "  2. Edit /etc/herb-pusher.env — add Infisical service token + project ID"
+Write-Host "  3. Run: bash /opt/the_herb_pusher/start.sh"

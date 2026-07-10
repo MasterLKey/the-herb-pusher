@@ -17,4 +17,6 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPayload(nextConfig)
+export default withPayload(nextConfig, {
+  configPath: './src/payload.config.ts',
+})

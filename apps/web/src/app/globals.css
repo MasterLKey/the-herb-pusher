@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@tailwindcss/typography";
 
 @theme {
   /* Brand colours */
@@ -13,10 +12,6 @@
   --color-brand-offwhite: #FFFDF7;
   --color-brand-caution: #B94A48;
   --color-brand-warn: #FFF4D6;
-
-  /* Typography */
-  --font-heading: "Inter", "system-ui", sans-serif;
-  --font-body: "Inter", "system-ui", sans-serif;
 
   /* Radius */
   --radius-card: 0.75rem;
@@ -33,18 +28,67 @@
   body {
     background-color: var(--color-brand-cream);
     color: var(--color-brand-charcoal);
-    font-family: var(--font-body);
+    /* next/font injects --font-inter and --font-space-grotesk as CSS vars at runtime */
+    font-family: var(--font-inter), system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
+    font-family: var(--font-space-grotesk), system-ui, sans-serif;
     font-weight: 700;
     line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: var(--color-brand-charcoal);
   }
 
-  /* Ensure evidence ratings are never conveyed by colour alone */
   [data-evidence-rating] {
     font-weight: 600;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-sage);
+    color: var(--color-brand-green);
+  }
+}
+
+@layer components {
+  /* Layout */
+  .container-content {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-narrow {
+    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Card — default */
+  .card-base {
+    @apply bg-brand-offwhite rounded-[var(--radius-card)] border border-brand-sage;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
+  }
+
+  /* Card — trading card style (ingredient / product) */
+  .card-trading {
+    @apply bg-brand-offwhite rounded-[var(--radius-card)] border border-brand-sage;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  }
+
+  .card-trading:hover {
+    box-shadow: 0 4px 12px 0 rgb(23 79 53 / 0.12);
+    border-color: var(--color-brand-leaf);
+    transform: translateY(-2px);
+  }
+
+  /* Section eyebrow label */
+  .section-label {
+    @apply text-xs font-bold uppercase tracking-widest text-brand-leaf;
+  }
+
+  /* Divider */
+  .divider {
+    @apply border-t border-brand-sage;
   }
 }
 
@@ -52,28 +96,73 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  .container-content {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-  .card-base {
-    @apply bg-brand-offwhite rounded-[var(--radius-card)] border border-brand-sage shadow-sm;
-  }
+
+  /* Badges */
   .badge-pill {
-    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-[var(--radius-badge)] text-xs font-semibold uppercase tracking-wide;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide;
   }
+
+  /* Buttons */
   .btn-primary {
-    @apply bg-brand-green text-brand-cream rounded-[var(--radius-btn)] px-5 py-2.5 font-semibold text-sm hover:bg-brand-leaf transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green;
+    @apply bg-brand-green text-brand-cream rounded-[var(--radius-btn)] px-5 py-2.5 font-semibold text-sm
+      hover:bg-brand-leaf transition-colors
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green
+      disabled:opacity-50 disabled:cursor-not-allowed;
   }
+
   .btn-secondary {
-    @apply bg-brand-offwhite text-brand-green border border-brand-green rounded-[var(--radius-btn)] px-5 py-2.5 font-semibold text-sm hover:bg-brand-sage transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green;
+    @apply bg-brand-offwhite text-brand-green border border-brand-green rounded-[var(--radius-btn)] px-5 py-2.5 font-semibold text-sm
+      hover:bg-brand-sage transition-colors
+      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green;
   }
+
+  .btn-ghost {
+    @apply text-brand-green rounded-[var(--radius-btn)] px-4 py-2 font-medium text-sm hover:bg-brand-sage transition-colors;
+  }
+
+  /* Alert boxes */
   .safety-box {
     @apply bg-brand-warn border-l-4 border-brand-gold rounded-r-lg p-4 text-sm;
   }
+
   .caution-box {
     @apply bg-red-50 border-l-4 border-brand-caution rounded-r-lg p-4 text-sm;
   }
+
   .info-box {
     @apply bg-brand-sage border-l-4 border-brand-leaf rounded-r-lg p-4 text-sm;
+  }
+
+  /* Prose — article body text */
+  .prose-brand {
+    @apply max-w-none text-gray-700 leading-relaxed;
+  }
+
+  .prose-brand h2 {
+    @apply text-2xl font-bold text-brand-charcoal mt-8 mb-3;
+  }
+
+  .prose-brand h3 {
+    @apply text-xl font-bold text-brand-charcoal mt-6 mb-2;
+  }
+
+  .prose-brand p {
+    @apply mb-4;
+  }
+
+  .prose-brand ul {
+    @apply list-disc pl-5 space-y-1 mb-4;
+  }
+
+  .prose-brand ol {
+    @apply list-decimal pl-5 space-y-1 mb-4;
+  }
+
+  .prose-brand a {
+    @apply text-brand-green underline hover:text-brand-leaf;
+  }
+
+  .prose-brand strong {
+    @apply font-bold text-brand-charcoal;
   }
 }

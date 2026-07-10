@@ -19,6 +19,9 @@ apps/web/src/generated-schema.graphql
 
 # Terraform secrets
 terraform/terraform.tfvars
+
+# Local deployment script (contains credentials — never commit)
+scripts/deploy.ps1
 terraform/.terraform/
 terraform/*.tfstate
 terraform/*.tfstate.backup

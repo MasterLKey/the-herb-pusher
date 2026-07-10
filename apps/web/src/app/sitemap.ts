@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { getPayload } from 'payload'
-import configPromise from '@/payload.config'
+import configPromise from '@payload-config'
+
+export const dynamic = 'force-dynamic'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://theherbpusher.com'
 

@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { EvidenceBadge } from '@/components/ui/EvidenceBadge'
-import { cn, type EvidenceRating } from '@/lib/utils'
+import { cn, EVIDENCE_RATING_CONFIG, type EvidenceRating } from '@/lib/utils'
 
 interface IngredientCardProps {
   name: string
@@ -23,6 +23,14 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: 'Supplement',
 }
 
+const EVIDENCE_BORDER: Record<EvidenceRating, string> = {
+  strong: 'border-l-brand-green',
+  moderate: 'border-l-brand-leaf',
+  early: 'border-l-brand-gold',
+  traditional: 'border-l-brand-clay',
+  hype: 'border-l-brand-charcoal',
+}
+
 export function IngredientCard({
   name,
   slug,
@@ -31,35 +39,49 @@ export function IngredientCard({
   category,
   className,
 }: IngredientCardProps) {
+  const config = EVIDENCE_RATING_CONFIG[evidenceRating]
+
   return (
     <Link
       href={`/ingredients/${slug}`}
       className={cn(
-        'card-base flex flex-col gap-3 p-5 hover:shadow-md hover:border-brand-leaf transition-all group',
+        'card-trading flex flex-col gap-0 p-0 overflow-hidden border-l-4 group',
+        EVIDENCE_BORDER[evidenceRating],
         className,
       )}
-      aria-label={`View ${name} ingredient page`}
+      aria-label={`View ${name} — ${config?.label ?? ''}`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          {category && (
-            <p className="text-xs text-brand-leaf font-medium uppercase tracking-wide mb-1">
-              {CATEGORY_LABELS[category] ?? category}
-            </p>
-          )}
-          <h3 className="font-bold text-brand-charcoal text-lg leading-tight group-hover:text-brand-green transition-colors">
-            {name}
-          </h3>
-        </div>
-        <ChevronRight
-          className="size-5 text-gray-400 shrink-0 mt-1 group-hover:text-brand-green transition-colors"
+      {/* Top: category + arrow */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+        {category ? (
+          <span className="section-label">
+            {CATEGORY_LABELS[category] ?? category}
+          </span>
+        ) : (
+          <span />
+        )}
+        <ArrowRight
+          className="size-4 text-gray-300 group-hover:text-brand-green group-hover:translate-x-0.5 transition-all"
           aria-hidden="true"
         />
       </div>
 
-      <EvidenceBadge rating={evidenceRating} size="sm" />
+      {/* Name */}
+      <div className="px-4 pb-2">
+        <h3 className="font-heading font-bold text-lg text-brand-charcoal leading-tight group-hover:text-brand-green transition-colors">
+          {name}
+        </h3>
+      </div>
 
-      <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">{shortSummary}</p>
+      {/* Evidence badge */}
+      <div className="px-4 pb-3">
+        <EvidenceBadge rating={evidenceRating} size="sm" />
+      </div>
+
+      {/* Summary */}
+      <div className="px-4 pb-4 mt-auto">
+        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">{shortSummary}</p>
+      </div>
     </Link>
   )
 }
