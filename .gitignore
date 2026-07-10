@@ -22,6 +22,9 @@ terraform/terraform.tfvars
 
 # Local deployment script (contains credentials — never commit)
 scripts/deploy.ps1
+
+# Production secrets file template (filled-in version lives on the server only)
+*.secrets.env
 terraform/.terraform/
 terraform/*.tfstate
 terraform/*.tfstate.backup
