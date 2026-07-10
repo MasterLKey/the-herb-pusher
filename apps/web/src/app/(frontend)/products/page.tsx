@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { Where } from 'payload'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -34,8 +35,8 @@ export default async function ProductsPage({ searchParams }: Props) {
   const { format = '', sort = 'name' } = await searchParams
   const payload = await getPayload({ config: configPromise })
 
-  const where: Record<string, unknown> = { status: { equals: 'live' } }
-  if (format) where.format = { equals: format }
+  const where: Where = { status: { equals: 'live' } }
+  if (format) where['format'] = { equals: format }
 
   const result = await payload.find({
     collection: 'products',
