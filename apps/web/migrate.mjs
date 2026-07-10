@@ -52,28 +52,29 @@ const { default: config } = await import('./src/payload.config.ts')
 console.log('[migrate] Connecting…')
 const payload = await getPayload({ config })
 
-// Generate a migration file from the current schema.
-// skipEmpty:true means no file is created if nothing changed.
-// On a fresh install this creates the initial SQL migration file.
-console.log('[migrate] Generating migration file from current schema…')
+// Generate a migration file only if the schema has drifted from existing files.
+// skipEmpty:true ensures no empty file is created when schema is already in sync.
+// Migration files are committed to git and baked into the Docker image so this
+// is a no-op on normal restarts and only creates a file when you've changed a
+// Payload collection definition without yet running migrate:create locally.
+console.log('[migrate] Checking for schema drift…')
 try {
   await payload.db.createMigration({
     forceAcceptWarning: true,
-    migrationName: 'initial',
+    migrationName: 'auto',
     payload,
     skipEmpty: true,
   })
-  console.log('[migrate] Migration file ready')
+  console.log('[migrate] Migration file ready (or no drift detected)')
 } catch (err) {
   const msg = String(err?.message ?? '')
-  // These are expected when schema is already in sync
   if (
     msg.toLowerCase().includes('no changes') ||
     msg.toLowerCase().includes('already exists') ||
     msg.toLowerCase().includes('nothing to migrate') ||
     msg.toLowerCase().includes('empty')
   ) {
-    console.log('[migrate] Schema already up to date, no new file needed')
+    console.log('[migrate] Schema in sync, no new migration file needed')
   } else {
     console.warn('[migrate] createMigration warning (continuing):', msg)
   }
