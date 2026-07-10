@@ -67,6 +67,11 @@ resource "proxmox_virtual_environment_container" "herb_pusher" {
     user_account {
       keys = [var.ssh_public_key]
     }
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
   }
 
   depends_on = [proxmox_virtual_environment_download_file.ubuntu_2404]

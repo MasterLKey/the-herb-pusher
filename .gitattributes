@@ -1,0 +1,7 @@
+# Force LF line endings for shell scripts — prevents CRLF issues on Windows
+*.sh text eol=lf
+*.bash text eol=lf
+Makefile text eol=lf
+
+# Auto-detect everything else
+* text=auto
