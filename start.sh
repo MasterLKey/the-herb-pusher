@@ -9,8 +9,11 @@ if [ ! -f "$SECRETS_FILE" ]; then
   exit 1
 fi
 
+# set -a auto-exports every variable defined in the sourced file
+set -a
 # shellcheck source=/dev/null
 source "$SECRETS_FILE"
+set +a
 
 # Non-secret config (also in secrets file but can be overridden here)
 export POSTGRES_DB="${POSTGRES_DB:-herb_pusher}"
