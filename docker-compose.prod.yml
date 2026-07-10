@@ -1,4 +1,29 @@
 services:
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: builder
+    working_dir: /app/apps/web
+    command: >
+      sh -c "
+        PAYLOAD_CONFIG_PATH=src/payload.config.ts node_modules/.bin/payload migrate:create --name initial 2>/dev/null || true &&
+        PAYLOAD_CONFIG_PATH=src/payload.config.ts node_modules/.bin/payload migrate
+      "
+    environment:
+      NODE_ENV: production
+      DATABASE_URI: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      MEILISEARCH_HOST: http://search:7700
+      MEILISEARCH_MASTER_KEY: ${MEILISEARCH_MASTER_KEY}
+      R2_BUCKET: ${R2_BUCKET}
+      R2_ENDPOINT: ${R2_ENDPOINT}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
   app:
     build:
       context: .
@@ -24,6 +49,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       search:
         condition: service_started
     restart: unless-stopped

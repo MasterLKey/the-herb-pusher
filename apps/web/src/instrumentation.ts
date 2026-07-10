@@ -1,10 +1,9 @@
 // Runs once on server startup, before any requests are served.
-// Forces Payload to initialise (and push the DB schema when push:true)
-// so the DB tables exist before the first request hits a page.
+// Warms up the Payload connection so the first request is not cold.
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
+  if (process.env.NEXT_RUNTIME !== 'edge') {
     const { getPayload } = await import('payload')
-    const configPromise = await import('@payload-config')
-    await getPayload({ config: configPromise.default })
+    const { default: config } = await import('@payload-config')
+    await getPayload({ config })
   }
 }
