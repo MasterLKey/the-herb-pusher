@@ -26,9 +26,13 @@ import path from 'path'
 Error.stackTraceLimit = 50
 
 // ── Patch Payload's own copy of @next/env ───────────────────────────────────
-// Resolve @next/env as Payload itself would (from Payload's package directory)
-const payloadPkgUrl = import.meta.resolve('payload/package.json')
-const payloadDir = path.dirname(fileURLToPath(payloadPkgUrl))
+// Resolve @next/env as Payload itself would (from Payload's package directory).
+// We can't use 'payload/package.json' (not exported), so navigate from the
+// main entry (dist/index.js) up two levels to the package root.
+const payloadEntryUrl = import.meta.resolve('payload')
+const payloadEntryPath = fileURLToPath(payloadEntryUrl)
+// dist/index.js → dist → package root
+const payloadDir = path.resolve(path.dirname(payloadEntryPath), '..')
 const requireFromPayload = createRequire(path.join(payloadDir, 'package.json'))
 
 const nextEnv = requireFromPayload('@next/env')
