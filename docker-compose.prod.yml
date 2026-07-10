@@ -5,14 +5,9 @@ services:
       dockerfile: apps/web/Dockerfile
       target: builder
     working_dir: /app/apps/web
-    command: >
-      sh -c "
-        PAYLOAD_CONFIG_PATH=src/payload.config.ts node_modules/.bin/payload migrate:create --name initial 2>/dev/null || true &&
-        PAYLOAD_CONFIG_PATH=src/payload.config.ts node_modules/.bin/payload migrate
-      "
+    command: /app/node_modules/.bin/tsx migrate.mjs
     environment:
       NODE_ENV: production
-      NODE_OPTIONS: --experimental-require-module
       DATABASE_URI: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       PAYLOAD_SECRET: ${PAYLOAD_SECRET}
       MEILISEARCH_HOST: http://search:7700
