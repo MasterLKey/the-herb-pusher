@@ -2,24 +2,39 @@
 /**
  * ESM-native migration runner.
  * Runs via tsx (which handles .mjs as ESM, supporting top-level await).
- * Patches the @next/env CJS-interop bug in Payload's loadEnv.js before
- * any Payload module is loaded.
+ *
+ * WHY THIS FILE EXISTS:
+ * The Payload CLI uses tsx's CJS register hook, which cannot load
+ * @payloadcms/richtext-lexical (it has top-level await).
+ * Running a .mjs file via `tsx migrate.mjs` uses the ESM pipeline for
+ * our top-level code, but Payload's internal require() chain still
+ * goes through tsx's CJS hook.
+ *
+ * A SECOND PROBLEM: Payload's loadEnv.js does:
+ *   import nextEnvImport from '@next/env'
+ *   const { loadEnvConfig } = nextEnvImport   // <— crashes
+ * because @next/env has __esModule:true but no .default export.
+ * When tsx transforms this ESM import to CJS, it accesses import_env.default
+ * which is undefined. Payload has its OWN nested copy of @next/env so we must
+ * patch THAT specific instance before any Payload module is required.
  */
 
-// ── Increase stack depth so we can see the full require chain ──────────────
+import { createRequire } from 'module'
+import { fileURLToPath } from 'url'
+import path from 'path'
+
 Error.stackTraceLimit = 50
 
-// ── Patch @next/env to add the missing .default export that Payload expects ─
-// payload/dist/bin/loadEnv.js does:  const { loadEnvConfig } = nextEnvImport
-// where nextEnvImport = import_env.default  (tsx's CJS interop)
-// But @next/env sets __esModule:true without a .default, so .default is undef.
-// Pre-loading via createRequire puts a patched copy in the CJS module cache
-// before tsx's hook can load the unpatched version.
-import { createRequire } from 'module'
-const _require = createRequire(import.meta.url)
-const nextEnv = _require('@next/env')
+// ── Patch Payload's own copy of @next/env ───────────────────────────────────
+// Resolve @next/env as Payload itself would (from Payload's package directory)
+const payloadPkgUrl = import.meta.resolve('payload/package.json')
+const payloadDir = path.dirname(fileURLToPath(payloadPkgUrl))
+const requireFromPayload = createRequire(path.join(payloadDir, 'package.json'))
+
+const nextEnv = requireFromPayload('@next/env')
 if (!nextEnv.default) {
-  // Make .default point to the module itself so Payload's destructure works
+  // @next/env sets __esModule:true but exports no .default.
+  // tsx's CJS interop accesses import_env.default, so make .default === module.
   Object.defineProperty(nextEnv, 'default', { value: nextEnv, enumerable: false })
 }
 
