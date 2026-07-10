@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { Where } from 'payload'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -28,8 +29,8 @@ export default async function GuidesPage({ searchParams }: Props) {
   const { type = '' } = await searchParams
   const payload = await getPayload({ config: configPromise })
 
-  const where: Record<string, unknown> = { status: { equals: 'published' } }
-  if (type) where.type = { equals: type }
+  const where: Where = { status: { equals: 'published' } }
+  if (type) where['type'] = { equals: type }
 
   const result = await payload.find({
     collection: 'articles',
