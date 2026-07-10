@@ -56,6 +56,9 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI,
     },
+    // Push schema directly to the DB on startup — suitable for this deployment
+    // (no separate migration step needed)
+    push: true,
   }),
 
   plugins: [
