@@ -7,8 +7,8 @@ services:
     working_dir: /app/apps/web
     command: >
       sh -c "
-        PAYLOAD_CONFIG_PATH=src/payload.config.ts node_modules/.bin/payload migrate:create --name initial 2>/dev/null || true &&
-        PAYLOAD_CONFIG_PATH=src/payload.config.ts node_modules/.bin/payload migrate
+        NODE_OPTIONS='--experimental-require-module' PAYLOAD_CONFIG_PATH=src/payload.config.ts node_modules/.bin/payload migrate:create --name initial 2>/dev/null || true &&
+        NODE_OPTIONS='--experimental-require-module' PAYLOAD_CONFIG_PATH=src/payload.config.ts node_modules/.bin/payload migrate
       "
     environment:
       NODE_ENV: production
