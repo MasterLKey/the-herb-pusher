@@ -52,28 +52,34 @@ const { default: config } = await import('./src/payload.config.ts')
 console.log('[migrate] Connecting…')
 const payload = await getPayload({ config })
 
-// Always attempt to generate a migration from the current schema.
-// On a fresh install this creates the initial SQL; on subsequent runs it
-// creates an incremental migration (or a no-op if schema is unchanged).
-console.log('[migrate] Generating migration snapshot…')
+// Generate a migration file from the current schema.
+// skipEmpty:true means no file is created if nothing changed.
+// On a fresh install this creates the initial SQL migration file.
+console.log('[migrate] Generating migration file from current schema…')
 try {
-  await payload.db.migrateCreate({ name: 'initial' })
-  console.log('[migrate] Migration snapshot created')
+  await payload.db.createMigration({
+    forceAcceptWarning: true,
+    migrationName: 'initial',
+    payload,
+    skipEmpty: true,
+  })
+  console.log('[migrate] Migration file ready')
 } catch (err) {
-  // Ignore "no changes" or "already exists" errors — schema is up to date
   const msg = String(err?.message ?? '')
+  // These are expected when schema is already in sync
   if (
     msg.toLowerCase().includes('no changes') ||
     msg.toLowerCase().includes('already exists') ||
-    msg.toLowerCase().includes('nothing to migrate')
+    msg.toLowerCase().includes('nothing to migrate') ||
+    msg.toLowerCase().includes('empty')
   ) {
-    console.log('[migrate] Schema up to date, no new migration needed')
+    console.log('[migrate] Schema already up to date, no new file needed')
   } else {
-    console.warn('[migrate] migrateCreate warning (continuing):', msg)
+    console.warn('[migrate] createMigration warning (continuing):', msg)
   }
 }
 
-console.log('[migrate] Running migrations…')
+console.log('[migrate] Applying pending migrations…')
 try {
   await payload.db.migrate()
   console.log('[migrate] ✓ Done')
