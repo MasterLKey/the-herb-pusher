@@ -36,7 +36,7 @@ export function ProductCard({
   return (
     <div className={cn('card-trading flex flex-col overflow-hidden', className)}>
       {/* Image area */}
-      <div className="relative bg-brand-sage/40 aspect-[4/3] overflow-hidden">
+      <div className="relative bg-white aspect-[4/3] overflow-hidden">
         {imageUrl ? (
           <Image
             src={imageUrl}
