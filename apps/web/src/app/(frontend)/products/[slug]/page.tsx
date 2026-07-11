@@ -72,7 +72,7 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Image */}
-        <div className="relative aspect-square bg-brand-sage rounded-[var(--radius-card)] overflow-hidden">
+        <div className="relative aspect-square bg-white rounded-[var(--radius-card)] overflow-hidden">
           {imageUrl ? (
             <Image
               src={imageUrl}
