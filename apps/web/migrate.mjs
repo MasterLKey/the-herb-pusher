@@ -82,6 +82,9 @@ try {
 
 console.log('[migrate] Applying pending migrations…')
 try {
+  // Destroy stdin so Payload's interactive prompts auto-accept defaults
+  // (prevents hanging when a newly-generated migration triggers a confirmation)
+  process.stdin.destroy()
   await payload.db.migrate()
   console.log('[migrate] ✓ Done')
 } catch (err) {
