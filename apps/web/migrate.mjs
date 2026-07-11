@@ -25,6 +25,13 @@ import path from 'path'
 
 Error.stackTraceLimit = 50
 
+// Prevent Payload's interactive CLI prompts from hanging the process.
+// Inquirer checks isTTY to decide whether to show a prompt; setting it
+// to undefined makes it fall through to the default (non-interactive) path.
+process.stdin.isTTY = false
+process.stdout.isTTY = false
+process.env.CI = '1'
+
 // ── Patch Payload's own copy of @next/env ───────────────────────────────────
 // Resolve @next/env as Payload itself would (from Payload's package directory).
 // We can't use 'payload/package.json' (not exported), so navigate from the
@@ -82,9 +89,6 @@ try {
 
 console.log('[migrate] Applying pending migrations…')
 try {
-  // Destroy stdin so Payload's interactive prompts auto-accept defaults
-  // (prevents hanging when a newly-generated migration triggers a confirmation)
-  process.stdin.destroy()
   await payload.db.migrate()
   console.log('[migrate] ✓ Done')
 } catch (err) {
