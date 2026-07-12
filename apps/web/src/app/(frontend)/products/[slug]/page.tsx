@@ -46,6 +46,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://theherbpusher.com'
+
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
   const product = await getProduct(slug)
@@ -57,7 +59,59 @@ export default async function ProductPage({ params }: Props) {
     typeof product.image === 'object' && product.image?.url ? product.image.url : null
   const brandName = typeof product.brand === 'object' ? product.brand?.name : ''
 
+  // Build absolute image URL for structured data
+  const absoluteImageUrl = imageUrl
+    ? imageUrl.startsWith('http') ? imageUrl : `${SITE_URL}${imageUrl}`
+    : null
+
+  const canonicalUrl = `${SITE_URL}/products/${slug}`
+
+  // JSON-LD: Product schema
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.seo?.description ?? product.shortDescription ?? undefined,
+    url: canonicalUrl,
+    ...(absoluteImageUrl ? { image: absoluteImageUrl } : {}),
+    ...(brandName ? { brand: { '@type': 'Brand', name: brandName } } : {}),
+    ...(product.editorialRating != null
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: String(product.editorialRating),
+            bestRating: '10',
+            worstRating: '0',
+            ratingCount: '1',
+          },
+        }
+      : {}),
+    ...(affiliateLinks.length > 0
+      ? {
+          offers: affiliateLinks.map((link: any) => {
+            const retailerName =
+              typeof link.retailer === 'object' ? link.retailer?.name : undefined
+            return {
+              '@type': 'Offer',
+              url: link.url,
+              priceCurrency: 'GBP',
+              ...(link.price != null ? { price: String(link.price.toFixed(2)) } : {}),
+              availability: 'https://schema.org/InStock',
+              ...(retailerName
+                ? { seller: { '@type': 'Organization', name: retailerName } }
+                : {}),
+            }
+          }),
+        }
+      : {}),
+  }
+
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     <div className="container-content py-8 max-w-5xl">
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
@@ -280,5 +334,6 @@ export default async function ProductPage({ params }: Props) {
         </p>
       </SafetyWarningBox>
     </div>
+    </>
   )
 }

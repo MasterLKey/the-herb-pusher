@@ -11,6 +11,8 @@ import type { EvidenceRating } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://theherbpusher.com'
+
 type Props = { params: Promise<{ slug: string }> }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -52,21 +54,56 @@ export default async function GuidePage({ params }: Props) {
   const featuredProducts = Array.isArray(article.featuredProducts) ? article.featuredProducts : []
   const typeLabel = TYPE_LABELS[article.type] ?? article.type
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: article.title,
-    description: article.excerpt,
-    datePublished: article.publishedAt,
-    dateModified: article.updatedAt,
-    author: article.author ? { '@type': 'Person', name: article.author } : undefined,
+  const canonicalUrl = `${SITE_URL}/guides/${article.slug}`
+
+  const publisher = {
+    '@type': 'Organization',
+    name: 'The Herb Pusher',
+    url: SITE_URL,
   }
+
+  // Article schema — richer than the basic version
+  const articleSchema: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': article.type === 'buying_guide' || article.type === 'comparison' ? 'Review' : 'Article',
+    headline: article.title,
+    description: article.seo?.description ?? article.excerpt ?? undefined,
+    url: canonicalUrl,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+    datePublished: article.publishedAt ?? undefined,
+    dateModified: article.updatedAt,
+    author: article.author
+      ? { '@type': 'Person', name: article.author }
+      : publisher,
+    publisher,
+  }
+
+  // For buying guides with featured products, add an ItemList so search engines
+  // surface each recommended product directly in results.
+  const itemListSchema =
+    featuredProducts.length > 0 &&
+    (article.type === 'buying_guide' || article.type === 'comparison')
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          name: article.title,
+          url: canonicalUrl,
+          itemListElement: featuredProducts.map((p: any, i: number) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            url: `${SITE_URL}/products/${p.slug ?? p}`,
+            name: p.name ?? p,
+          })),
+        }
+      : null
+
+  const jsonLd = [articleSchema, ...(itemListSchema ? [itemListSchema] : [])]
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd.length === 1 ? jsonLd[0] : jsonLd) }}
       />
 
       {/* Hero */}
