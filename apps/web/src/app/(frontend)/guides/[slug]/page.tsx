@@ -8,6 +8,7 @@ import { SafetyWarningBox } from '@/components/ui/SafetyWarningBox'
 import { ProductCard } from '@/components/product/ProductCard'
 import { IngredientCard } from '@/components/ingredient/IngredientCard'
 import type { EvidenceRating } from '@/lib/utils'
+import { RichText } from '@payloadcms/richtext-lexical/react'
 
 export const dynamic = 'force-dynamic'
 
@@ -213,16 +214,12 @@ export default async function GuidePage({ params }: Props) {
               </SafetyWarningBox>
             )}
 
-            {/* Article body — Lexical rich text renders as HTML */}
+            {/* Article body — rendered from Payload Lexical JSON */}
             {article.content ? (
-              <div className="prose-brand">
-                {/* Payload Lexical content would render here via a serializer */}
-                <p className="text-gray-700 leading-relaxed">
-                  {typeof article.content === 'string'
-                    ? article.content
-                    : 'Content coming soon.'}
-                </p>
-              </div>
+              <RichText
+                className="prose-brand"
+                data={article.content as Parameters<typeof RichText>[0]['data']}
+              />
             ) : (
               <p className="text-gray-500">Content coming soon.</p>
             )}
