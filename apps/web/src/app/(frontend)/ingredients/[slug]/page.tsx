@@ -11,6 +11,8 @@ import { EVIDENCE_RATING_CONFIG, type EvidenceRating } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://theherbpusher.com'
+
 type Props = { params: Promise<{ slug: string }> }
 
 async function getIngredient(slug: string) {
@@ -39,9 +41,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const ing = await getIngredient(slug)
   if (!ing) return {}
+
+  const title = ing.seo?.title ?? `${ing.name} — Evidence, Benefits & Buying Guide`
+  const description = ing.seo?.description ?? ing.shortSummary ?? undefined
+  const canonicalUrl = `${SITE_URL}/ingredients/${slug}`
+
   return {
-    title: `${ing.name} — Evidence, Benefits & Buying Guide`,
-    description: ing.seo?.description ?? ing.shortSummary,
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | The Herb Pusher`,
+      description,
+    },
   }
 }
 
@@ -57,20 +76,88 @@ export default async function IngredientPage({ params }: Props) {
   const rating = (ing.evidenceRating ?? 'moderate') as EvidenceRating
   const ratingConfig = EVIDENCE_RATING_CONFIG[rating]
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    name: ing.name,
-    description: ing.shortSummary,
-    dateModified: ing.lastReviewed ?? ing.updatedAt,
+  const canonicalUrl = `${SITE_URL}/ingredients/${slug}`
+
+  // Build FAQ entries from whatever structured data the ingredient has.
+  // Only include items that have real content — empty answers hurt more than they help.
+  const faqItems: Array<{ question: string; answer: string }> = []
+
+  if (ing.overview) {
+    faqItems.push({ question: `What is ${ing.name}?`, answer: ing.overview })
   }
+
+  if (Array.isArray(ing.commonUses) && ing.commonUses.length > 0) {
+    const uses = ing.commonUses.map((u: any) => u.use).filter(Boolean).join('; ')
+    if (uses) {
+      faqItems.push({
+        question: `What is ${ing.name} commonly used for?`,
+        answer: uses,
+      })
+    }
+  }
+
+  if (ing.evidenceSummary) {
+    faqItems.push({
+      question: `Is there scientific evidence that ${ing.name} works?`,
+      answer: ing.evidenceSummary,
+    })
+  }
+
+  if (Array.isArray(ing.cautions) && ing.cautions.length > 0) {
+    const cautionText = ing.cautions.map((c: any) => c.caution).filter(Boolean).join(' ')
+    if (cautionText) {
+      faqItems.push({
+        question: `Are there any safety concerns with ${ing.name}?`,
+        answer: cautionText,
+      })
+    }
+  }
+
+  const recommendedForm = Array.isArray(ing.commonForms)
+    ? ing.commonForms.find((f: any) => f.recommended)
+    : null
+  if (recommendedForm?.form) {
+    faqItems.push({
+      question: `What is the best form of ${ing.name} to buy?`,
+      answer: recommendedForm.notes
+        ? `${recommendedForm.form}: ${recommendedForm.notes}`
+        : recommendedForm.form,
+    })
+  }
+
+  const faqLd = faqItems.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqItems.map(({ question, answer }) => ({
+          '@type': 'Question',
+          name: question,
+          acceptedAnswer: { '@type': 'Answer', text: answer },
+        })),
+      }
+    : null
+
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Ingredients', item: `${SITE_URL}/ingredients` },
+      { '@type': 'ListItem', position: 3, name: ing.name, item: canonicalUrl },
+    ],
+  }
+
+  const schemas = [breadcrumbLd, ...(faqLd ? [faqLd] : [])]
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {schemas.map((schema, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
 
       {/* Hero */}
       <div className="bg-brand-charcoal text-brand-cream py-10 md:py-14">
