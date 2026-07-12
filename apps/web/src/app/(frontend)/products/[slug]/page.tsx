@@ -36,17 +36,42 @@ async function getAffiliateLinks(productId: string) {
   return result.docs
 }
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://theherbpusher.com'
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const product = await getProduct(slug)
   if (!product) return {}
+
+  const description = product.seo?.description ?? product.shortDescription ?? undefined
+  const imageUrl =
+    typeof product.image === 'object' && product.image?.url ? product.image.url : null
+  const absoluteImageUrl = imageUrl
+    ? imageUrl.startsWith('http') ? imageUrl : `${SITE_URL}${imageUrl}`
+    : null
+  const brandName = typeof product.brand === 'object' ? product.brand?.name : undefined
+
   return {
-    title: `${product.name} — The Herb Pusher`,
-    description: product.seo?.description ?? product.shortDescription,
+    title: product.seo?.title ?? `${product.name} — The Herb Pusher`,
+    description,
+    alternates: { canonical: `${SITE_URL}/products/${slug}` },
+    openGraph: {
+      title: `${product.name}${brandName ? ` by ${brandName}` : ''}`,
+      description,
+      url: `${SITE_URL}/products/${slug}`,
+      type: 'website',
+      ...(absoluteImageUrl
+        ? { images: [{ url: absoluteImageUrl, alt: product.name }] }
+        : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${product.name}${brandName ? ` by ${brandName}` : ''} | The Herb Pusher`,
+      description,
+      ...(absoluteImageUrl ? { images: [absoluteImageUrl] } : {}),
+    },
   }
 }
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://theherbpusher.com'
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
@@ -106,11 +131,26 @@ export default async function ProductPage({ params }: Props) {
       : {}),
   }
 
+  // JSON-LD: BreadcrumbList
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Products', item: `${SITE_URL}/products` },
+      { '@type': 'ListItem', position: 3, name: product.name, item: canonicalUrl },
+    ],
+  }
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
     <div className="container-content py-8 max-w-5xl">
       {/* Breadcrumb */}

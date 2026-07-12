@@ -39,9 +39,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const article = await getArticle(slug)
   if (!article) return {}
+
+  const title = article.seo?.title ?? article.title
+  const description = article.seo?.description ?? article.excerpt ?? undefined
+  const canonicalUrl = `${SITE_URL}/guides/${slug}`
+
+  const ogImageUrl: string | null =
+    typeof article.seo?.ogImage === 'object' && article.seo.ogImage?.url
+      ? article.seo.ogImage.url.startsWith('http')
+        ? article.seo.ogImage.url
+        : `${SITE_URL}${article.seo.ogImage.url}`
+      : null
+
   return {
-    title: article.seo?.title ?? article.title,
-    description: article.seo?.description ?? article.excerpt,
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'article',
+      ...(article.publishedAt ? { publishedTime: article.publishedAt } : {}),
+      ...(article.updatedAt ? { modifiedTime: article.updatedAt } : {}),
+      ...(article.author ? { authors: [article.author] } : {}),
+      ...(ogImageUrl ? { images: [{ url: ogImageUrl, alt: title }] } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | The Herb Pusher`,
+      description,
+      ...(ogImageUrl ? { images: [ogImageUrl] } : {}),
+    },
   }
 }
 
@@ -97,7 +126,17 @@ export default async function GuidePage({ params }: Props) {
         }
       : null
 
-  const jsonLd = [articleSchema, ...(itemListSchema ? [itemListSchema] : [])]
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Guides', item: `${SITE_URL}/guides` },
+      { '@type': 'ListItem', position: 3, name: article.title, item: canonicalUrl },
+    ],
+  }
+
+  const jsonLd = [articleSchema, ...(itemListSchema ? [itemListSchema] : []), breadcrumbLd]
 
   return (
     <>
