@@ -294,8 +294,10 @@ export default async function GuidePage({ params }: Props) {
                       brandName={typeof p.brand === 'object' ? p.brand?.name ?? '' : ''}
                       format={p.format}
                       price={p.price}
-                      vegan={p.vegan}
-                      thirdPartyTested={p.thirdPartyTested}
+                      vegan={p.vegan === true || p.vegan === 'yes'}
+                      thirdPartyTested={p.thirdPartyTested === true || p.thirdPartyTested === 'yes'}
+                      imageUrl={typeof p.image === 'object' ? p.image?.url : undefined}
+                      imageAlt={typeof p.image === 'object' ? p.image?.alt ?? p.name : undefined}
                     />
                   ))}
                 </div>
