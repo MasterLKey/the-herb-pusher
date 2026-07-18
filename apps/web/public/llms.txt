@@ -1,0 +1,21 @@
+# The Herb Pusher
+
+> Evidence-first supplement discovery site. We explain vitamins, minerals, herbs and supplements without the wellness waffle — with clear evidence ratings and honest buying guides.
+
+The Herb Pusher helps people understand what supplements may support, how strong the clinical evidence is, and where to buy without falling for marketing hype. Editorial ratings are never for sale. Affiliate links are clearly labelled.
+
+## Key pages
+
+- [Home](https://theherbpusher.com/): Overview and featured ingredients
+- [Ingredients](https://theherbpusher.com/ingredients): Evidence-rated vitamins, minerals, herbs and other supplements
+- [Products](https://theherbpusher.com/products): Product comparisons with affiliate links
+- [Wellness goals](https://theherbpusher.com/goals): Browse supplements by goal (sleep, focus, immunity, etc.)
+- [Guides](https://theherbpusher.com/guides): Buying guides and research explainers
+- [About](https://theherbpusher.com/about): Editorial approach and values
+- [Editorial policy](https://theherbpusher.com/editorial-policy): How we rate evidence and review claims
+- [Affiliate disclosure](https://theherbpusher.com/affiliate-disclosure): How we make money
+- [Disclaimer](https://theherbpusher.com/disclaimer): Medical disclaimer — not health advice
+
+## Optional
+
+- [Sitemap](https://theherbpusher.com/sitemap.xml): Full list of indexed pages
