@@ -2,34 +2,34 @@ import Script from 'next/script'
 
 /**
  * Optional analytics — only loads when env vars are set at runtime.
- * Plausible (self-hosted or cloud):
- * - PLAUSIBLE_DOMAIN — tracked site hostname, e.g. theherbpusher.com
- * - PLAUSIBLE_SCRIPT_URL — script URL (defaults to plausible.io cloud)
- *   self-host example: https://analytics.theherbpusher.com/js/script.js
+ *
+ * Plausible CE (hashed tracker script from site settings):
+ * - PLAUSIBLE_SCRIPT_URL — e.g. https://analytics.theherbpusher.com/js/pa-….js
+ *
  * Google Analytics 4:
  * - GA_MEASUREMENT_ID — e.g. G-XXXXXXXXXX
  */
 export function Analytics() {
-  const plausibleDomain =
-    process.env.PLAUSIBLE_DOMAIN || process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
   const plausibleScript =
     process.env.PLAUSIBLE_SCRIPT_URL ||
-    process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL ||
-    'https://plausible.io/js/script.js'
+    process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL
   const gaId =
     process.env.GA_MEASUREMENT_ID || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
-  if (!plausibleDomain && !gaId) return null
+  if (!plausibleScript && !gaId) return null
 
   return (
     <>
-      {plausibleDomain && (
-        <Script
-          defer
-          data-domain={plausibleDomain}
-          src={plausibleScript}
-          strategy="afterInteractive"
-        />
+      {plausibleScript && (
+        <>
+          <Script async src={plausibleScript} strategy="afterInteractive" />
+          <Script id="plausible-init" strategy="afterInteractive">
+            {`
+              window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+              plausible.init()
+            `}
+          </Script>
+        </>
       )}
       {gaId && (
         <>

@@ -37,10 +37,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body className="antialiased">
-        {children}
+      <head>
         <Analytics />
-      </body>
+      </head>
+      <body className="antialiased">{children}</body>
     </html>
   )
 }
