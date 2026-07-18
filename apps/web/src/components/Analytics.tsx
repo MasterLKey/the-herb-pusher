@@ -2,13 +2,20 @@ import Script from 'next/script'
 
 /**
  * Optional analytics — only loads when env vars are set at runtime.
- * Prefer server-only names so keys work without a rebuild:
- * - PLAUSIBLE_DOMAIN (or NEXT_PUBLIC_PLAUSIBLE_DOMAIN)
- * - GA_MEASUREMENT_ID (or NEXT_PUBLIC_GA_MEASUREMENT_ID)
+ * Plausible (self-hosted or cloud):
+ * - PLAUSIBLE_DOMAIN — tracked site hostname, e.g. theherbpusher.com
+ * - PLAUSIBLE_SCRIPT_URL — script URL (defaults to plausible.io cloud)
+ *   self-host example: https://analytics.theherbpusher.com/js/script.js
+ * Google Analytics 4:
+ * - GA_MEASUREMENT_ID — e.g. G-XXXXXXXXXX
  */
 export function Analytics() {
   const plausibleDomain =
     process.env.PLAUSIBLE_DOMAIN || process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
+  const plausibleScript =
+    process.env.PLAUSIBLE_SCRIPT_URL ||
+    process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL ||
+    'https://plausible.io/js/script.js'
   const gaId =
     process.env.GA_MEASUREMENT_ID || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
@@ -20,7 +27,7 @@ export function Analytics() {
         <Script
           defer
           data-domain={plausibleDomain}
-          src="https://plausible.io/js/script.js"
+          src={plausibleScript}
           strategy="afterInteractive"
         />
       )}
