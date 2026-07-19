@@ -92,10 +92,12 @@ export default async function GuidePage({ params }: Props) {
     url: SITE_URL,
   }
 
-  // Article schema — richer than the basic version
+  // Article schema — buying guides/comparisons are Articles, not Review.
+  // Google requires itemReviewed on Review; multi-product guides don't have a
+  // single reviewed entity, so Review here caused a critical GSC error.
   const articleSchema: Record<string, unknown> = {
     '@context': 'https://schema.org',
-    '@type': article.type === 'buying_guide' || article.type === 'comparison' ? 'Review' : 'Article',
+    '@type': 'Article',
     headline: article.title,
     description: article.seo?.description ?? article.excerpt ?? undefined,
     url: canonicalUrl,
